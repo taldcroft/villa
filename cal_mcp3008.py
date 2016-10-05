@@ -15,6 +15,9 @@ import matplotlib.dates as dates
 from astropy.time import Time
 import astropy.units as u
 from matplotlib.dates import DateFormatter
+import Adafruit_BME280 as bme280
+
+sensor280 = bme280.BME280(mode=bme280.BME280_OSAMPLE_8)
 
 GPIO.setmode(GPIO.BCM)
 DEBUG = 1
@@ -37,14 +40,22 @@ YMAX = 30
 plt.ion()
 fig = plt.figure(figsize=(18,6))
 ax = fig.add_subplot(111)
-plt.ylim(YMIN,YMAX)
+plt.ylim(YMIN, YMAX)
 
-steinharts = [25., 25.]
 times = [Time.now().plot_date, (Time.now() + TIMELENGTH*u.s).plot_date]
-hl, = ax.plot_date(times, steinharts)
+steinharts = [25., 25.]
+degrees280s = [25., 25.]
+humidity280s = [0., 0]
+
+hl = ax.plot_date(times, steinharts)[0]
+hl2 = ax.plot_date(times, steinharts)[0]
 plt.title('Sensor temperature')
 plt.ylabel('Degrees (C)')
 plt.grid()
+
+ax2 = ax.twinx()
+ax2.set_ylim(0, 100)
+hl3 = ax2.plot_date(times, humidity280s, 'r*')[0]
 
 hms_formatter = DateFormatter('%H:%M:%S')
 ax.xaxis.set_major_formatter(hms_formatter)
@@ -121,30 +132,41 @@ while True:
     steinhart = 1.0 / steinhart                 # Invert
     steinhart -= 273.15                         # convert to C
  
-    
-    print("Temperature = {:.2f}".format(steinhart))
+    print("ADC Temperature = {:.2f}".format(steinhart))
+
+    degrees280 = sensor280.read_temperature()
+    humidity280 = sensor280.read_humidity()
 
     # hang out and do nothing for a half second
     time.sleep(0.5)
-    steinharts.append(steinhart)
+
     times.append(Time.now().plot_date)
+    steinharts.append(steinhart)
+    degrees280s.append(degrees280)
+    humidity280s.append(humidity280)
 
     if len(steinharts) > TIMELENGTH:
         steinharts = steinharts[-TIMELENGTH:]
+        degrees280s = degrees280s[-TIMELENGTH:]
+        humidity280s = humidity280s[-TIMELENGTH:]
         times = times[-TIMELENGTH:]
 
-    def update_line(hl, new_data):
-        ymin = np.min(new_data)
-        ymax = np.max(new_data)
-        ymin = min(ymin,YMIN)
-        ymax = max(ymax,YMAX)
-        hl.set_ydata(new_data)
-        hl.set_xdata(times)
-        ax.set_ylim(ymin,ymax)
-        ax.set_xlim(np.min(times), np.max(times))
-        fig.canvas.draw()
-        fig.canvas.flush_events()
+    ymin = np.min(steinharts)
+    ymax = np.max(steinharts)
+    ymin = min(ymin,YMIN)
+    ymax = max(ymax,YMAX)
 
-        
-    update_line(hl, steinharts)
+    hl.set_ydata(steinharts)
+    hl.set_xdata(times)
 
+    hl2.set_ydata(degrees280s)
+    hl2.set_xdata(times)
+
+    hl3.set_ydata(humidity280s)
+    hl3.set_xdata(times)
+
+    ax.set_ylim(ymin,ymax)
+    ax.set_xlim(np.min(times), np.max(times))
+
+    fig.canvas.draw()
+    fig.canvas.flush_events()
