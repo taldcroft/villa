@@ -12,6 +12,9 @@ import RPi.GPIO as GPIO
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.dates as dates
+from astropy.time import Time
+import astropy.units as u
+from matplotlib.dates import DateFormatter
 
 GPIO.setmode(GPIO.BCM)
 DEBUG = 1
@@ -32,15 +35,19 @@ TIMELENGTH = 50
 YMIN = 20
 YMAX = 30
 plt.ion()
-fig = plt.figure()
+fig = plt.figure(figsize=(18,6))
 ax = fig.add_subplot(111)
 plt.ylim(YMIN,YMAX)
-plt.xlim(0,TIMELENGTH)
-hl, = ax.plot([],[])
 
+steinharts = [25., 25.]
+times = [Time.now().plot_date, (Time.now() + TIMELENGTH*u.s).plot_date]
+hl, = ax.plot_date(times, steinharts)
+plt.title('Sensor temperature')
+plt.ylabel('Degrees (C)')
+plt.grid()
 
-
-steinharts = []
+hms_formatter = DateFormatter('%H:%M:%S')
+ax.xaxis.set_major_formatter(hms_formatter)
 
 
 # read SPI data from MCP3008 chip, 8 possible adc's (0 thru 7)
@@ -120,9 +127,11 @@ while True:
     # hang out and do nothing for a half second
     time.sleep(0.5)
     steinharts.append(steinhart)
+    times.append(Time.now().plot_date)
 
     if len(steinharts) > TIMELENGTH:
         steinharts = steinharts[-TIMELENGTH:]
+        times = times[-TIMELENGTH:]
 
     def update_line(hl, new_data):
         ymin = np.min(new_data)
@@ -130,8 +139,9 @@ while True:
         ymin = min(ymin,YMIN)
         ymax = max(ymax,YMAX)
         hl.set_ydata(new_data)
-        hl.set_xdata(np.arange(len(new_data)))
+        hl.set_xdata(times)
         ax.set_ylim(ymin,ymax)
+        ax.set_xlim(np.min(times), np.max(times))
         fig.canvas.draw()
         fig.canvas.flush_events()
 
