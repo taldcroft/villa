@@ -121,9 +121,11 @@ while True:
     print('Counts = {}'.format(counts))
 
     average = 1023 / counts - 1
-    average = SERIESRESISTOR / average
-    # Serial.print("Thermistor resistance ") 
-    # Serial.println(average)
+    try:
+        average = SERIESRESISTOR / average
+    except Exception as err:
+        print('divide by zero {}'.format(average))
+        average = 1.0
  
     steinhart = average / THERMISTORNOMINAL     # (R/Ro)
     steinhart = log(steinhart)                  # ln(R/Ro)
