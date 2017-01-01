@@ -24,6 +24,7 @@
 import logging
 import time
 
+from ..util import degC2degF
 
 # BME280 default address.
 BME280_I2CADDR = 0x77
@@ -177,7 +178,7 @@ class BME280(object):
         UT / 131072.0 - self.dig_T1 / 8192.0)) * float(self.dig_T3)
         self.t_fine = int(var1 + var2)
         temp = (var1 + var2) / 5120.0
-        return temp
+        return degC2degF(temp)
 
     def read_pressure(self):
         """Gets the compensated pressure in Pascals."""
