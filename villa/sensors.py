@@ -8,7 +8,7 @@ from __future__ import division
 
 from math import log
 import RPi.GPIO as GPIO
-import Adafruit_BME280 as bme280
+from .adafruit import BME280 as bme280
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
