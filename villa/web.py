@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-import villa_mon
+from .sensors import get_sensors
 import datetime
 app = Flask(__name__)
 
@@ -10,11 +10,14 @@ def hello():
 
    status = dict(time=time_string,
                  title='HELLO!')
-   env_status = {key: '{:.1f}'.format(val) for key, val in villa_mon.get_status().items()}
+   sensors = {key: '{:.1f}'.format(val) for key, val in get_sensors().items()}
    
-   status.update(env_status)
+   status.update(sensors)
 
    return render_template('main.html', **status)
 
-if __name__ == "__main__":
+def main():
    app.run(host='0.0.0.0', port=80, debug=True)
+
+if __name__ == "__main__":
+   main()
