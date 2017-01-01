@@ -3,12 +3,18 @@
 # Written by Limor "Ladyada" Fried for Adafruit Industries, (c) 2015
 # This code is released into the public domain
 
+from __future__ import division
+
 import time
 import os
 from math import log
 
 from ..util import degC2degF
+
 import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
 
 DEBUG = 1
 
