@@ -8,6 +8,7 @@ setup(name='villa',
       zip_safe=False,
       packages=find_packages(),
       entry_points={'console_scripts': ['villa_web=villa.web:main',
-                                        'villa_mon=villa.monitor:main']},
+                                        'villa_mon=villa.monitor:main',
+                                        'villa_watch=villa.watch:main']},
       package_data={'villa': ['templates/*.html']},
 )
