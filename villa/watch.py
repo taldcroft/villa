@@ -29,13 +29,14 @@ ALERT_TEMP = 40  # deg F
 
 
 def get_recent_data():
-    """Get recent temperatuer data file using scp"""
+    """Get recent temperature data file using scp"""
     passwd = open(os.path.join(ROOTDIR, 'passwd'), 'r').read()
     cmd = ('scp pi@{}:/home/pi/static/sensors/recent.dat {}'
            .format(villa_ip, RECENT))
     proc = pexpect.spawn(cmd)
     proc.expect('password: ')
     proc.sendline(passwd)
+    proc.expect(pexpect.EOF)
 
 
 def read_recent_data():
