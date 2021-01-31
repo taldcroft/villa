@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import pexpect
 import time
 import shutil
@@ -14,6 +12,7 @@ from scipy.signal import medfilt
 
 import smtplib
 from email.mime.text import MIMEText
+import logging
 
 from . import monitor
 
@@ -23,13 +22,17 @@ fail_log_fn = os.path.join(ROOTDIR, 'fail.log')
 timeout = 30
 rooturl = 'http://76.179.57.252/static/sensors/'
 villa_ip = '76.179.57.252'
-recipients = ['taldcroft@gmail.com', 'anetasie@gmail.com']
+recipients = ['taldcroft@gmail.com', 'anetasie@gmail.com',
+              '6177214364@vtext.com', '3392937602@msg.fi.google.com']
 
 ALERT_TEMP = 40  # deg F
 
 
+logging.basicConfig(level=logging.INFO)
+
 def get_recent_data():
     """Get recent temperature data file using scp"""
+    logging.debug('Getting recent temperature data file')
     passwd = open(os.path.join(ROOTDIR, 'passwd'), 'r').read()
     cmd = ('scp pi@{}:/home/pi/static/sensors/recent.dat {}'
            .format(villa_ip, RECENT))
@@ -40,11 +43,13 @@ def get_recent_data():
 
 
 def read_recent_data():
+    logging.debug('Reading recent temperature data')
     dat = Table.read(RECENT, format='ascii', guess=False)
     return dat
 
 
 def plot_recent_data(dat):
+    logging.debug('Making plot of recent day and week')
     for fn, last_day in (('recent-week.png', False),
                          ('recent-day.png', True)):
         outfile = os.path.join(ROOTDIR, fn)
@@ -64,6 +69,7 @@ def sendmail(recipients, text, subject):
 
 
 def send_email_alert(date):
+    logging.warning('Sending alert for low temperature!')
     subject = 'VILLA TEMPERATURE ALERT {}!!'.format(date)
     text = """ALERT:
 Villa temperature may be too low at {}.  Check
@@ -74,6 +80,7 @@ Villa temperature may be too low at {}.  Check
 
 
 def check_recent_data(dat):
+    logging.debug('Checking recent data for low temperature')
     date_1day_ago = (Time.now() - 1 * u.day).isot
     ok = dat['date'] > date_1day_ago
     dat = dat[ok]
