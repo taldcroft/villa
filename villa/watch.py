@@ -84,7 +84,10 @@ def check_recent_data(dat):
     date_1day_ago = (Time.now() - 1 * u.day).isot
     ok = dat['date'] > date_1day_ago
     dat = dat[ok]
-    vals = np.vstack([dat['temp_280'], dat['temp_adc0']]).transpose().flatten()
+    # Previously, use both ADC and BME for checking, but ADC is showing bad
+    # data from dropouts.
+    # vals = np.vstack([dat['temp_280'], dat['temp_adc0']]).transpose().flatten()
+    vals = dat['temp_280']
     med_vals = medfilt(vals, 11)  # 25 minutes (5x5) of samples between the two sensors
 
     bad = med_vals < ALERT_TEMP
